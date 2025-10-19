@@ -3,6 +3,7 @@ import { AppLayout } from './layouts/AppLayout';
 import { HomePage } from './pages/HomePage';
 import { ExercisesPage } from './pages/ExercisesPage';
 import { ExerciseDetailPage } from './pages/ExerciseDetailPage';
+import { PracticePage } from './pages/PracticePage';
 import { ProgressPage } from './pages/ProgressPage';
 import { RecordingsPage } from './pages/RecordingsPage';
 import { AboutPage } from './pages/AboutPage';
@@ -31,6 +32,11 @@ export const router = createBrowserRouter([
         errorElement: <RouteErrorBoundary />
       },
       {
+        path: 'practice',
+        element: <PracticePage />,
+        errorElement: <RouteErrorBoundary />
+      },
+      {
         path: 'progress',
         element: <ProgressPage />,
         errorElement: <RouteErrorBoundary />
@@ -51,7 +57,9 @@ export const router = createBrowserRouter([
       }
     ],
   },
-]);
+], {
+  basename: '/Coqui-Sing'
+});
 
 export function AppRouter() {
   return <RouterProvider router={router} />;
