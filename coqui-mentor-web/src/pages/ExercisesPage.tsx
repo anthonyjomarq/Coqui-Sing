@@ -4,6 +4,7 @@ import { useExercises, useToggleFavorite } from '../hooks/data/useExercises';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Loader } from '../components/common/Loader';
+import { DemoModeBanner } from '../components/common/DemoModeBanner';
 
 export function ExercisesPage() {
   const { data: exercises, isLoading } = useExercises();
@@ -32,6 +33,8 @@ export function ExercisesPage() {
         <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-8 animate-fade-in">
           Exercise Library
         </h1>
+
+        <DemoModeBanner />
 
         {/* Search */}
         <div className="mb-6 animate-slide-in-up">

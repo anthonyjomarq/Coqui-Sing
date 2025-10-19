@@ -1,9 +1,7 @@
 /**
- * Backend Service
- * Handles communication with the Coqui MelodyMentor backend API
+ * Backend Service - Demo Mode
+ * Provides simulated data for frontend demonstration
  */
-
-import { io, Socket } from 'socket.io-client';
 
 export interface AudioAnalysisData {
   pitch: {
@@ -43,286 +41,191 @@ export interface FeedbackData {
 }
 
 class BackendService {
-  private socket: Socket | null = null;
   private isConnected = false;
-  private backendUrl: string;
+  private readonly isDemoMode = true;
 
   constructor() {
-    this.backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+    console.log('Running in demo mode with simulated data');
   }
 
-  /**
-   * Connect to the backend WebSocket
-   */
+  private generateMockAnalysis(): AudioAnalysisData {
+    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const octaves = [3, 4, 5];
+
+    return {
+      pitch: {
+        frequency: 220 + Math.random() * 440,
+        note: notes[Math.floor(Math.random() * notes.length)],
+        octave: octaves[Math.floor(Math.random() * octaves.length)],
+        cents: Math.random() * 50 - 25,
+        confidence: 0.8 + Math.random() * 0.2
+      },
+      volume: {
+        average: 0.5 + Math.random() * 0.3,
+        peak: 0.7 + Math.random() * 0.3,
+        dynamicRange: 0.2 + Math.random() * 0.3
+      },
+      clarity: {
+        score: 0.7 + Math.random() * 0.25,
+        factors: {
+          noiseLevel: 0.05 + Math.random() * 0.15,
+          harmonicity: 0.75 + Math.random() * 0.2,
+          stability: 0.8 + Math.random() * 0.15
+        }
+      },
+      technique: {
+        breathControl: 0.65 + Math.random() * 0.3,
+        vibrato: 0.6 + Math.random() * 0.35,
+        articulation: 0.7 + Math.random() * 0.25
+      },
+      overallScore: 0.7 + Math.random() * 0.25
+    };
+  }
+
+  private generateMockFeedback(): FeedbackData {
+    const allStrengths = [
+      'Excellent pitch accuracy on sustained notes',
+      'Strong breath control throughout the exercise',
+      'Consistent tone quality in middle register',
+      'Smooth transitions between notes',
+      'Good dynamic range control',
+      'Natural vibrato technique'
+    ];
+
+    const allImprovements = [
+      'Work on higher register stability',
+      'Focus on breath support during longer phrases',
+      'Improve vibrato consistency',
+      'Practice softer dynamics',
+      'Strengthen lower register resonance',
+      'Work on diction clarity'
+    ];
+
+    const allSuggestions = [
+      'Practice with a metronome to improve timing',
+      'Record yourself to identify areas for improvement',
+      'Try humming exercises for better resonance',
+      'Work on lip trills for breath control',
+      'Practice scales slowly with focus on intonation'
+    ];
+
+    return {
+      overallScore: 0.7 + Math.random() * 0.25,
+      strengths: this.getRandomItems(allStrengths, 2, 3),
+      improvements: this.getRandomItems(allImprovements, 2, 3),
+      suggestions: this.getRandomItems(allSuggestions, 2, 3),
+      nextSteps: [
+        'Continue with current exercise level',
+        'Try the next difficulty when comfortable'
+      ]
+    };
+  }
+
+  private getRandomItems<T>(array: T[], min: number, max: number): T[] {
+    const count = min + Math.floor(Math.random() * (max - min + 1));
+    const shuffled = [...array].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  }
+
   connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      try {
-        this.socket = io(this.backendUrl, {
-          transports: ['websocket'],
-          timeout: 5000,
-        });
-
-        this.socket.on('connect', () => {
-          this.isConnected = true;
-          resolve();
-        });
-
-        this.socket.on('connect_error', (error) => {
-          console.error('Backend connection error:', error);
-          this.isConnected = false;
-          reject(error);
-        });
-
-        this.socket.on('disconnect', () => {
-          this.isConnected = false;
-        });
-
-        // Handle errors
-        this.socket.on('error', (error) => {
-          console.error('Backend error:', error);
-        });
-
-      } catch (error) {
-        reject(error);
-      }
-    });
+    console.log('Demo connection established');
+    this.isConnected = true;
+    return Promise.resolve();
   }
 
-  /**
-   * Disconnect from the backend
-   */
   disconnect(): void {
-    if (this.socket) {
-      this.socket.disconnect();
-      this.socket = null;
-      this.isConnected = false;
-    }
+    this.isConnected = false;
   }
 
-  /**
-   * Start audio analysis
-   */
   startAudioAnalysis(): void {
-    if (this.socket && this.isConnected) {
-      this.socket.emit('audio:start');
-    }
+    console.log('Audio analysis started');
   }
 
-  /**
-   * Send audio data for analysis
-   */
-  sendAudioData(audioData: Float32Array, sampleRate: number): void {
-    if (this.socket && this.isConnected) {
-      // Convert Float32Array to regular array for JSON serialization
-      const audioArray = Array.from(audioData);
-      this.socket.emit('audio:data', {
-        audioData: audioArray,
-        sampleRate
-      });
-    }
+  sendAudioData(_audioData: Float32Array, _sampleRate: number): void {
+    // No-op in demo mode
   }
 
-  /**
-   * Stop audio analysis
-   */
   stopAudioAnalysis(): void {
-    if (this.socket && this.isConnected) {
-      this.socket.emit('audio:stop');
-    }
+    console.log('Audio analysis stopped');
   }
 
-  /**
-   * Join a practice session
-   */
-  joinSession(sessionId: string): void {
-    if (this.socket && this.isConnected) {
-      this.socket.emit('session:join', sessionId);
-    }
+  joinSession(_sessionId: string): void {
+    // No-op in demo mode
   }
 
-  /**
-   * Leave a practice session
-   */
-  leaveSession(sessionId: string): void {
-    if (this.socket && this.isConnected) {
-      this.socket.emit('session:leave', sessionId);
-    }
+  leaveSession(_sessionId: string): void {
+    // No-op in demo mode
   }
 
-  /**
-   * Set up audio analysis listener
-   */
   onAudioAnalysis(callback: (data: AudioAnalysisData) => void): void {
-    if (this.socket) {
-      this.socket.on('audio:analysis', callback);
-    }
+    const interval = setInterval(() => {
+      if (this.isConnected) {
+        callback(this.generateMockAnalysis());
+      }
+    }, 100);
+
+    const originalDisconnect = this.disconnect.bind(this);
+    this.disconnect = () => {
+      clearInterval(interval);
+      originalDisconnect();
+    };
   }
 
-  /**
-   * Set up feedback listener
-   */
   onFeedback(callback: (data: FeedbackData) => void): void {
-    if (this.socket) {
-      this.socket.on('audio:feedback', callback);
-    }
+    setTimeout(() => {
+      if (this.isConnected) {
+        callback(this.generateMockFeedback());
+      }
+    }, 2000);
   }
 
-  /**
-   * Set up session update listener
-   */
-  onSessionUpdate(callback: (data: any) => void): void {
-    if (this.socket) {
-      this.socket.on('session:update', callback);
-    }
+  onSessionUpdate(_callback: (data: any) => void): void {
+    // No-op in demo mode
   }
 
-  /**
-   * Set up error listener
-   */
-  onError(callback: (error: { message: string; code: string }) => void): void {
-    if (this.socket) {
-      this.socket.on('error', callback);
-    }
+  onError(_callback: (error: { message: string; code: string }) => void): void {
+    // No-op in demo mode
   }
 
-  /**
-   * Get connection status
-   */
   getConnectionStatus(): boolean {
     return this.isConnected;
   }
 
-  /**
-   * Send audio data to backend for analysis via HTTP
-   */
-  async analyzeAudio(audioData: Float32Array, sampleRate: number): Promise<AudioAnalysisData> {
-    try {
-      const response = await fetch(`${this.backendUrl}/api/v1/audio/analyze`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          audioData: Array.from(audioData),
-          sampleRate,
-          duration: audioData.length / sampleRate
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result.data;
-    } catch (error) {
-      console.error('Error analyzing audio:', error);
-      throw error;
-    }
+  async analyzeAudio(_audioData: Float32Array, _sampleRate: number): Promise<AudioAnalysisData> {
+    await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
+    return this.generateMockAnalysis();
   }
 
-  /**
-   * Get AI feedback on performance
-   */
-  async getFeedback(pitchData: any, accuracy: number, clarity: number, technique: number): Promise<FeedbackData> {
-    try {
-      const response = await fetch(`${this.backendUrl}/api/v1/audio/feedback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pitchData,
-          accuracy,
-          clarity,
-          technique
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result.data;
-    } catch (error) {
-      console.error('Error getting feedback:', error);
-      throw error;
-    }
+  async getFeedback(_pitchData: any, _accuracy: number, _clarity: number, _technique: number): Promise<FeedbackData> {
+    await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
+    return this.generateMockFeedback();
   }
 
-  /**
-   * Get available audio devices
-   */
   async getAudioDevices(): Promise<any[]> {
-    try {
-      const response = await fetch(`${this.backendUrl}/api/v1/audio/devices`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result.data.devices;
-    } catch (error) {
-      console.error('Error getting audio devices:', error);
-      return [];
-    }
+    return [
+      { deviceId: 'default', label: 'Default Microphone', kind: 'audioinput' },
+      { deviceId: 'demo1', label: 'Demo Microphone 1', kind: 'audioinput' }
+    ];
   }
 
-  /**
-   * Create a new practice session
-   */
-  async createSession(exerciseType: string, difficulty: string, duration: number): Promise<any> {
-    try {
-      const response = await fetch(`${this.backendUrl}/api/v1/sessions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          exerciseType,
-          difficulty,
-          duration
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result.data;
-    } catch (error) {
-      console.error('Error creating session:', error);
-      throw error;
-    }
+  async createSession(_exerciseType: string, _difficulty: string, _duration: number): Promise<any> {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return {
+      sessionId: 'demo-' + Date.now(),
+      exerciseType: _exerciseType,
+      difficulty: _difficulty,
+      duration: _duration,
+      startedAt: new Date().toISOString()
+    };
   }
 
-  /**
-   * Update session metrics
-   */
-  async updateSession(sessionId: string, metrics: any): Promise<void> {
-    try {
-      const response = await fetch(`${this.backendUrl}/api/v1/sessions/${sessionId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          metrics
-        }),
-      });
+  async updateSession(_sessionId: string, _metrics: any): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error('Error updating session:', error);
-      throw error;
-    }
+  getIsDemoMode(): boolean {
+    return this.isDemoMode;
   }
 }
 
-// Export singleton instance
 export const backendService = new BackendService();
